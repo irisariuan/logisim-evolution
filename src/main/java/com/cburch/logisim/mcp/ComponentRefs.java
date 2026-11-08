@@ -184,7 +184,7 @@ public final class ComponentRefs {
     if (byId != null && circ.contains(byId)) return byId;
     if (ref.startsWith("@")) {
       final var at = parseLocation(ref.substring(1), "component");
-      for (final var c : circ.getNonWires(at)) if (c.getLocation().equals(at)) return c;
+      for (final var c : circ.getNonWires()) if (c.getLocation().equals(at)) return c;
       for (final var c : circ.getAllContaining(at)) return c;
       throw new McpToolException("No component at " + ref.substring(1) + " in '" + circ.getName() + "'.");
     }
