@@ -16,7 +16,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashSet;
 
-class Clipboard {
+public class Clipboard {
   public static final String CONTENTS_PROPERTY = "contents";
   private static final PropertyChangeWeakSupport propertySupport =
       new PropertyChangeWeakSupport(Clipboard.class);
@@ -47,6 +47,22 @@ class Clipboard {
         newAttrs = copyAttrs;
       }
     }
+  }
+
+  /** Clipboard holding copies of the given components (used without a selection, e.g. by MCP). */
+  private Clipboard(Collection<? extends Component> comps) {
+    components = new HashSet<>();
+    oldAttrs = null;
+    newAttrs = null;
+    for (final var base : comps) {
+      final var copyAttrs = (AttributeSet) base.getAttributeSet().clone();
+      components.add(base.getFactory().createComponent(base.getLocation(), copyAttrs));
+    }
+  }
+
+  /** Replaces the clipboard contents with copies of {@code comps}. */
+  public static void setComponents(Collection<? extends Component> comps) {
+    set(new Clipboard(comps));
   }
 
   //
