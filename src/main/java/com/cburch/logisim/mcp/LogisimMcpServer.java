@@ -164,11 +164,9 @@ public final class LogisimMcpServer {
     if (dialogs.isEmpty()) return res;
     final var content = new ArrayList<McpSchema.Content>(res.content());
     content.add(McpSchema.TextContent.builder(json(Map.of("dialogs", dialogs))).build());
-    return McpSchema.CallToolResult.builder()
-        .content(content)
-        .isError(res.isError())
-        .structuredContent(res.structuredContent())
-        .build();
+    final var b = McpSchema.CallToolResult.builder().content(content).isError(res.isError());
+    if (res.structuredContent() != null) b.structuredContent(res.structuredContent());
+    return b.build();
   }
 
   private static McpSchema.CallToolResult error(String message) {
