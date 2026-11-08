@@ -13,6 +13,7 @@ import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.CircuitMapInfo;
 import com.cburch.logisim.proj.ProjectActions;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +76,11 @@ public class MappableResourcesContainer {
 
   public BoardInformation getBoardInformation() {
     return currentUsedBoard;
+  }
+
+  /** The board I/O components (in map mode) that circuit components are mapped to. */
+  public List<FpgaIoInformationContainer> getIoComponents() {
+    return Collections.unmodifiableList(myIOComponents);
   }
 
   public void save() {

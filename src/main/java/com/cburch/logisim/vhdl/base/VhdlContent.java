@@ -246,6 +246,12 @@ public class VhdlContent extends HdlContent {
   private int errCode = 0;
   private Exception errException;
 
+  /** The error of the last failed validation as "title: message", or null if there is none. */
+  public String getErrorText() {
+    if (errTitle.length() == 0 && errMessage.length() == 0) return null;
+    return errTitle + (errTitle.length() > 0 && errMessage.length() > 0 ? ": " : "") + errMessage;
+  }
+
   @Override
   public void showErrors() {
     if (valid && errTitle.length() == 0 && errMessage.length() == 0) return;

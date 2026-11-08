@@ -321,7 +321,7 @@ public class VhdlSimulatorTop implements CircuitListener {
    * @param p
    * @return
    */
-  private boolean hasVhdlComponent(Project p) {
+  public boolean hasVhdlComponent(Project p) {
     return hasVhdlComponent(p.getCircuitState());
   }
 

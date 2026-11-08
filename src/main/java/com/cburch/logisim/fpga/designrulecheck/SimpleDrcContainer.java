@@ -13,6 +13,7 @@ import com.cburch.logisim.circuit.Circuit;
 import com.cburch.logisim.circuit.Splitter;
 import com.cburch.logisim.circuit.Wire;
 import com.cburch.logisim.instance.InstanceComponent;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -104,6 +105,11 @@ public class SimpleDrcContainer {
 
   public boolean hasCircuit() {
     return (myCircuit != null);
+  }
+
+  /** The components/wires this report refers to (never null). */
+  public Set<Object> getDrcComponents() {
+    return drcComponents == null ? Set.of() : Collections.unmodifiableSet(drcComponents);
   }
 
   public void addMarkComponent(Object comp) {

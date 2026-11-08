@@ -10,6 +10,7 @@
 package com.cburch.logisim.fpga.gui;
 
 import com.cburch.logisim.fpga.designrulecheck.SimpleDrcContainer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JProgressBar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,31 @@ public class Reporter {
   private static final Logger logger = LoggerFactory.getLogger(Reporter.class);
   private FpgaReportTabbedPane myCommander = null;
   private JProgressBar progress = null;
+
+  /** Receives a copy of every report (used by tools that need the messages as data). */
+  public interface Listener {
+    /**
+     * Called for each report.
+     *
+     * @param kind one of "error", "fatal", "severe", "warning", "severeWarning", "info", "console".
+     * @param message a String or a {@link SimpleDrcContainer}.
+     */
+    void reported(String kind, Object message);
+  }
+
+  private final CopyOnWriteArrayList<Listener> listeners = new CopyOnWriteArrayList<>();
+
+  public void addListener(Listener l) {
+    listeners.addIfAbsent(l);
+  }
+
+  public void removeListener(Listener l) {
+    listeners.remove(l);
+  }
+
+  private void fire(String kind, Object message) {
+    for (final var l : listeners) l.reported(kind, message);
+  }
 
   public JProgressBar getProgressBar() {
     return progress;
@@ -34,6 +60,7 @@ public class Reporter {
   }
 
   public void addErrorIncrement(String message) {
+    fire("error", message);
     if (myCommander == null)
       logger.error(message);
     else
@@ -41,6 +68,7 @@ public class Reporter {
   }
 
   public void addError(Object message) {
+    fire("error", message);
     if (myCommander == null) {
       if (message instanceof String msg) logger.error(msg);
     } else {
@@ -55,6 +83,7 @@ public class Reporter {
   }
 
   public void addFatalError(String message) {
+    fire("fatal", message);
     if (myCommander == null)
       logger.error(message);
     else
@@ -62,6 +91,7 @@ public class Reporter {
   }
 
   public void addSevereError(String message) {
+    fire("severe", message);
     if (myCommander == null)
       logger.error(message);
     else
@@ -69,6 +99,7 @@ public class Reporter {
   }
 
   public void addInfo(String message) {
+    fire("info", message);
     if (myCommander == null)
       logger.info(message);
     else
@@ -76,6 +107,7 @@ public class Reporter {
   }
 
   public void addSevereWarning(String message) {
+    fire("severeWarning", message);
     if (myCommander == null)
       logger.warn(message);
     else
@@ -83,6 +115,7 @@ public class Reporter {
   }
 
   public void addWarningIncrement(String message) {
+    fire("warning", message);
     if (myCommander == null)
       logger.warn(message);
     else
@@ -90,6 +123,7 @@ public class Reporter {
   }
 
   public void addWarning(Object message) {
+    fire("warning", message);
     if (myCommander == null) {
       if (message instanceof String msg) logger.warn(msg);
     } else {
@@ -105,6 +139,7 @@ public class Reporter {
   }
 
   public void print(String message) {
+    fire("console", message);
     if (myCommander == null)
       logger.info(message);
     else
