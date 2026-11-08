@@ -177,12 +177,12 @@ public class Line extends AbstractCanvasObject {
       var y0 = this.y0;
       var x1 = this.x1;
       var y1 = this.y1;
-      final var h = gesture.getHandle();
-      if (h.isAt(x0, y0)) {
+      final var h = gesture == null ? null : gesture.getHandle();
+      if (h != null && h.isAt(x0, y0)) {
         x0 += gesture.getDeltaX();
         y0 += gesture.getDeltaY();
       }
-      if (h.isAt(x1, y1)) {
+      if (h != null && h.isAt(x1, y1)) {
         x1 += gesture.getDeltaX();
         y1 += gesture.getDeltaY();
       }
