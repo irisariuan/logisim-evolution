@@ -332,6 +332,7 @@ public final class McpContext {
             proj = new Project(file);
             for (final var circ : file.getCircuits()) circ.setProject(proj);
             headlessProjects.add(proj);
+            proj.getSimulator().nudge();
           }
           currentProject = proj;
           return proj;
@@ -361,6 +362,8 @@ public final class McpContext {
               throw new McpToolException("Could not open " + file + ": " + e.getMessage(), e);
             }
             headlessProjects.add(proj);
+            // Without a window nothing kicks off the first propagation.
+            proj.getSimulator().nudge();
           }
           currentProject = proj;
           return proj;
@@ -369,7 +372,10 @@ public final class McpContext {
 
   /** Registers a project created elsewhere (headless mode only; GUI projects register themselves). */
   public void addHeadlessProject(Project proj) {
-    if (!gui && !headlessProjects.contains(proj)) headlessProjects.add(proj);
+    if (!gui && !headlessProjects.contains(proj)) {
+      headlessProjects.add(proj);
+      proj.getSimulator().nudge();
+    }
     if (currentProject == null) currentProject = proj;
   }
 

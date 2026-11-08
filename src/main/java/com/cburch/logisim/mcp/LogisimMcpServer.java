@@ -72,6 +72,8 @@ public final class LogisimMcpServer {
       - Dialogs that Logisim would show are not displayed; they are returned under 'dialogs' in \
       the tool result. Some tools accept 'dialogAnswers' to answer them.
       - Use server_info to learn whether a GUI is attached (changes are then visible live).
+      - To SEE a circuit, use view_screenshot (showIds=true labels components with their ids).
+      - In GUI mode, if a modal dialog or file chooser is open (e.g. after view_menu_invoke),       inspect and answer it with view_dialog_list / view_dialog_close.
       """;
 
   private static final List<McpSyncServer> servers = new ArrayList<>();
