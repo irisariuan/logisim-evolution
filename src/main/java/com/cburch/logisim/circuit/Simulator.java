@@ -144,6 +144,8 @@ public class Simulator {
     private boolean nudgeRequested = false;
     private boolean resetRequested = false;
     private boolean complete = false;
+    private boolean working = false; // true while loop() processes a request
+    private final Condition idleChanged = simStateLock.newCondition();
     private double avgTickNanos = -1.0;
 
     // These are copies of some of the above variables that can be read without
@@ -386,10 +388,35 @@ public class Simulator {
       }
     }
 
+    /**
+     * Waits until the thread has no pending request (reset, nudge, step, tick, test vector) and is
+     * not processing one. Auto-ticking is not considered a pending request.
+     */
+    boolean awaitIdle(long timeoutNanos) throws InterruptedException {
+      simStateLock.lock();
+      try {
+        var remaining = timeoutNanos;
+        while (!complete
+            && (working
+                || resetRequested
+                || nudgeRequested
+                || manualStepsRequested > 0
+                || manualTicksRequested > 0
+                || requestedTestVectors != null)) {
+          if (remaining <= 0) return false;
+          remaining = idleChanged.awaitNanos(remaining);
+        }
+        return true;
+      } finally {
+        simStateLock.unlock();
+      }
+    }
+
     void requestShutDown() {
       simStateLock.lock();
       try {
         complete = true;
+        idleChanged.signalAll();
         if (Thread.currentThread() != this) {
           simStateUpdated.signalAll();
         }
@@ -493,6 +520,7 @@ public class Simulator {
             }
           }
         } while (!ready);
+        working = true;
       } finally {
         simStateLock.unlock();
       }
@@ -595,6 +623,8 @@ public class Simulator {
           autoTickingUnsynchronized = false;
           clockDied = true;
         }
+        working = false;
+        idleChanged.signalAll();
       } finally {
         simStateLock.unlock();
       }
@@ -630,6 +660,8 @@ public class Simulator {
             manualTicksRequested = 0;
             manualStepsRequested = 0;
             nudgeRequested = false;
+            working = false;
+            idleChanged.signalAll();
           } finally {
             simStateLock.unlock();
           }
@@ -870,6 +902,29 @@ public class Simulator {
 
   public void shutDown() {
     simThread.requestShutDown();
+  }
+
+  /**
+   * Blocks until the simulation thread has processed every pending request (reset, nudge, step,
+   * tick) and is idle, or until the timeout expires. Must not be called from the simulation thread,
+   * nor from the Swing event thread (the simulation thread may need it to make progress).
+   *
+   * @return true if the simulator is idle, false on timeout.
+   */
+  public boolean waitUntilIdle(long timeoutMillis) throws InterruptedException {
+    if (Thread.currentThread() == simThread) {
+      throw new IllegalStateException("waitUntilIdle called from the simulation thread");
+    }
+    return simThread.awaitIdle(Math.max(0, timeoutMillis) * 1_000_000L);
+  }
+
+  /**
+   * True when the propagator still has scheduled signal changes (only meaningful when the simulator
+   * is idle, e.g. after {@link #waitUntilIdle}, typically with auto-propagation disabled).
+   */
+  public boolean isPropagationPending() {
+    final var prop = simThread.getPropagatorUnsynchronized();
+    return prop != null && prop.isPending();
   }
 
   private boolean ensureClocks() {

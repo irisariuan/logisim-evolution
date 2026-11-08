@@ -116,6 +116,14 @@ public class Keyboard extends InstanceFactory {
     }
   }
 
+  /** The characters currently waiting in the keyboard's buffer. */
+  public static String getBufferContents(InstanceState state) {
+    final var keyboardData = getKeyboardState(state);
+    synchronized (keyboardData) {
+      return keyboardData.toString();
+    }
+  }
+
   private static int getBufferLength(Object bufferAttr) {
     return (bufferAttr instanceof Integer)
            ? (Integer) bufferAttr

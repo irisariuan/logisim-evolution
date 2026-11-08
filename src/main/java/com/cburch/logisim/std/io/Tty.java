@@ -232,6 +232,19 @@ public class Tty extends InstanceFactory implements DynamicElementProvider {
     }
   }
 
+  /** The text currently shown by the TTY: one line per row, up to the cursor row. */
+  public String getDisplayText(InstanceState state) {
+    final var tty = getTtyState(state);
+    final var out = new StringBuilder();
+    synchronized (tty) {
+      for (var i = 0; i <= tty.getCursorRow(); i++) {
+        if (i > 0) out.append('\n');
+        out.append(tty.getRowString(i));
+      }
+    }
+    return out.toString();
+  }
+
   public void sendToStdout(InstanceState state) {
     final var tty = getTtyState(state);
     tty.setSendStdout(true);
