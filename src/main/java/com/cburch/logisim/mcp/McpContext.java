@@ -244,6 +244,11 @@ public final class McpContext {
   public Project getCurrentProject() {
     final var all = getProjects();
     if (currentProject != null && all.contains(currentProject)) return currentProject;
+    // A freshly created window registers itself with Projects asynchronously.
+    if (currentProject != null && gui && currentProject.getFrame() != null
+        && currentProject.getFrame().isDisplayable()) {
+      return currentProject;
+    }
     if (gui) {
       final var top = Projects.getTopFrame();
       if (top != null && top.getProject() != null) return top.getProject();

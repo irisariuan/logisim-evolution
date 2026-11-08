@@ -14,6 +14,7 @@ import com.cburch.logisim.file.Loader;
 import com.cburch.logisim.mcp.LogisimMcpServer;
 import com.cburch.logisim.mcp.McpContext;
 import com.cburch.logisim.proj.Project;
+import com.cburch.logisim.proj.ProjectActions;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,10 @@ final class McpLauncher {
                   } catch (InterruptedException ignored) {
                     // exit below
                   }
-                  logger.info("MCP stdio client disconnected");
+                  // The client that launched us went away: quit like the user would (asking
+                  // about unsaved changes in the visible windows).
+                  logger.info("MCP stdio client disconnected; quitting");
+                  javax.swing.SwingUtilities.invokeLater(ProjectActions::doQuit);
                 },
                 "logisim-mcp-stdio-watch");
         watcher.setDaemon(true);
