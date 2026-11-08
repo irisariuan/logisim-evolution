@@ -134,6 +134,17 @@ public class MapComponent {
     return nrOfPins;
   }
 
+  /** The label of one pin of this component (as used in map keys "name#label"). */
+  public String getPinLabel(int pin) {
+    return pin < 0 || pin >= pinLabels.size() ? null : pinLabels.get(pin);
+  }
+
+  /** The pin of the board I/O component that pin {@code pin} is mapped to, or -1. */
+  public int getMapIoPin(int pin) {
+    if (pin < 0 || pin >= nrOfPins || maps.get(pin) == null) return -1;
+    return maps.get(pin).getIoPin();
+  }
+
   public boolean hasInputs() {
     return myInputBubbles.keySet().size() != 0;
   }
