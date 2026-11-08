@@ -9,6 +9,7 @@
 
 package com.cburch.logisim.prefs;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.prefs.PreferenceChangeEvent;
 
@@ -45,6 +46,18 @@ class PrefMonitorStringOpts extends AbstractPrefMonitor<String> {
     final var prefs = AppPreferences.getPrefs();
     set(prefs.get(name, dflt));
     prefs.addPreferenceChangeListener(this);
+  }
+
+  /** Returns the default value of this preference. */
+  @Override
+  public String getDefault() {
+    return dflt;
+  }
+
+  /** Returns the values this preference accepts. */
+  @Override
+  public List<String> getChoices() {
+    return List.of(opts);
   }
 
   /**

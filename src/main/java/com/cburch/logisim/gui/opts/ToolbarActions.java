@@ -16,7 +16,7 @@ import com.cburch.logisim.proj.Action;
 import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.tools.Tool;
 
-class ToolbarActions {
+public final class ToolbarActions {
   private ToolbarActions() {
     // private
   }
