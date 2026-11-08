@@ -13,6 +13,7 @@
     * [Nightly builds (unstable)](#nightly-builds)
   * [Pictures of Logisim-evolution](docs/pics.md)
   * [More Information](docs/docs.md)
+  * [AI control (MCP server)](docs/mcp.md)
   * [Bug reports & feature requests](https://github.com/logisim-evolution/logisim-evolution/issues)
   * [For developers](docs/developers.md)
   * [How to contribute](docs/developers.md#how-to-contribute)
@@ -35,6 +36,7 @@ Project highlights:
 * TCL/TK console (interfaces between the circuit and the user),
 * huge library of components (LEDs, TTLs, switches, SoCs),
 * allows for custom libraries to be [loaded on startup](docs/automatic_library_import.md)
+* can be [controlled by AI assistants](docs/mcp.md) through its built-in Model Context Protocol (MCP) server,
 * supports [multiple languages](docs/docs.md#translations),
 * and more!
 
