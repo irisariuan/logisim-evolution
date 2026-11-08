@@ -1,0 +1,21 @@
+/*
+ * Logisim-evolution - digital logic design tool and simulator
+ * Copyright by the Logisim-evolution developers
+ *
+ * https://github.com/logisim-evolution/
+ *
+ * This is free software released under GNU GPLv3 license
+ */
+
+package com.cburch.logisim.mcp.tools;
+
+import com.cburch.logisim.mcp.McpToolGroup;
+import com.cburch.logisim.mcp.McpToolRegistry;
+
+/** HDL generation (VHDL/Verilog), HDL components and FPGA synthesis/download. */
+public final class HdlTools implements McpToolGroup {
+  @Override
+  public void register(McpToolRegistry registry) {
+    // TODO: tools are added here.
+  }
+}

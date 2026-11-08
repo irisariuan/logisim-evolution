@@ -11,23 +11,31 @@ package com.cburch.logisim.util;
 
 import static com.cburch.logisim.util.Strings.S;
 
+import com.cburch.logisim.data.Direction;
+import com.cburch.logisim.gui.generic.OptionPane;
 import com.cburch.logisim.gui.menu.Menu;
+import com.cburch.logisim.mcp.LogisimMcpServer;
 import com.cburch.logisim.prefs.AppPreferences;
 import com.cburch.logisim.prefs.PrefMonitorKeyStroke;
+import java.awt.BorderLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import javax.swing.ButtonGroup;
-import javax.swing.JFrame;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
-
-import com.cburch.logisim.data.Direction;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 public class WindowMenu extends Menu {
   private class MyListener implements LocaleListener, ActionListener, PropertyChangeListener {
@@ -44,6 +52,8 @@ public class WindowMenu extends Menu {
         doToolbar();
       } else if (src == explorer) {
         doExplorer();
+      } else if (src == mcpServer) {
+        doToggleMcpServer();
       } else if (src instanceof WindowMenuItem choice) {
         if (choice.isSelected()) {
           final var item = findOwnerItem();
@@ -80,6 +90,7 @@ public class WindowMenu extends Menu {
               : S.get("windowZoomItem"));
       toolbar.setText(S.get("windowShowToolbarItem"));
       explorer.setText(S.get("windowShowNavigationPaneItem"));
+      mcpServer.setText(S.get("windowMcpServerItem"));
     }
 
     @Override
@@ -101,6 +112,7 @@ public class WindowMenu extends Menu {
   private final JCheckBoxMenuItem toolbar = new JCheckBoxMenuItem();
   private final JMenuItem close = new JMenuItem();
   private final JCheckBoxMenuItem explorer = new JCheckBoxMenuItem();
+  private final JCheckBoxMenuItem mcpServer = new JCheckBoxMenuItem();
   private final JRadioButtonMenuItem nullItem = new JRadioButtonMenuItem();
   private final ArrayList<WindowMenuItem> persistentItems = new ArrayList<>();
   private final ArrayList<WindowMenuItem> transientItems = new ArrayList<>();
@@ -145,11 +157,62 @@ public class WindowMenu extends Menu {
       AppPreferences.WINDOW_EXPLORER_VISIBLE.addPropertyChangeListener(myListener);
     }
 
+    mcpServer.addActionListener(myListener);
+    addMenuListener(
+        new MenuListener() {
+          @Override
+          public void menuSelected(MenuEvent e) {
+            mcpServer.setState(LogisimMcpServer.isHttpRunning());
+          }
+
+          @Override
+          public void menuDeselected(MenuEvent e) {
+            // nothing
+          }
+
+          @Override
+          public void menuCanceled(MenuEvent e) {
+            // nothing
+          }
+        });
+
     computeEnabled();
     computeContents();
 
     LocaleManager.addLocaleListener(myListener);
     myListener.localeChanged();
+  }
+
+  /** Starts or stops the MCP HTTP endpoint (127.0.0.1 only) that lets AI assistants drive Logisim. */
+  private void doToggleMcpServer() {
+    if (LogisimMcpServer.isHttpRunning()) {
+      LogisimMcpServer.stopHttp();
+      mcpServer.setState(false);
+      return;
+    }
+    try {
+      try {
+        LogisimMcpServer.startHttp(
+            LogisimMcpServer.DEFAULT_HTTP_PORT);
+      } catch (IOException portInUse) {
+        LogisimMcpServer.startHttp(0);
+      }
+      mcpServer.setState(true);
+      final var url = LogisimMcpServer.getHttpUrl();
+      final var field = new JTextField(url);
+      field.setEditable(false);
+      final var panel = new JPanel(new BorderLayout(0, 6));
+      panel.add(new JLabel(S.get("windowMcpServerStarted")), BorderLayout.NORTH);
+      panel.add(field, BorderLayout.CENTER);
+      OptionPane.showMessageDialog(
+          owner, panel, S.get("windowMcpServerItem"),
+          OptionPane.INFORMATION_MESSAGE);
+    } catch (Exception e) {
+      mcpServer.setState(false);
+      OptionPane.showMessageDialog(
+          owner, S.get("windowMcpServerError", String.valueOf(e.getMessage())),
+          S.get("windowMcpServerItem"), OptionPane.ERROR_MESSAGE);
+    }
   }
 
   @Override
@@ -183,6 +246,7 @@ public class WindowMenu extends Menu {
     if (hasExplorerToggle()) {
       add(explorer);
     }
+    add(mcpServer);
 
     if (!persistentItems.isEmpty()) {
       addSeparator();

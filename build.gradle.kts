@@ -56,6 +56,10 @@ dependencies {
   implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
   implementation("org.apache.commons:commons-text:1.15.0")
 
+  // Model Context Protocol server (stdio + streamable HTTP), see com.cburch.logisim.mcp
+  implementation("io.modelcontextprotocol.sdk:mcp:2.1.0")
+  implementation("org.eclipse.jetty.ee11:jetty-ee11-servlet:12.1.14")
+
   // NOTE: Be aware of reported issues with Eclipse and Batik
   // See: https://github.com/logisim-evolution/logisim-evolution/issues/709
   // implementation("org.apache.xmlgraphics:batik-swing:1.14")
@@ -1050,6 +1054,8 @@ tasks {
 
   shadowJar {
     archiveBaseName.set(project.name)
+    // The MCP SDK discovers its JSON mapper through java.util.ServiceLoader.
+    mergeServiceFiles()
     archiveVersion.set(ext.get(APP_VERSION) as String)
     from(".") {
       include("LICENSE.md")

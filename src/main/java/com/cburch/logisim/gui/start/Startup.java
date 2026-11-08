@@ -103,6 +103,10 @@ public class Startup implements AWTEventListener {
   private boolean exitAfterStartup = false;
   private boolean quitAfterParsing = false;
   private boolean showSplash;
+  /* MCP server: stdio transport requested, GUI requested together with stdio, HTTP port (or -1) */
+  private boolean mcpStdio = false;
+  private boolean mcpGui = false;
+  private int mcpHttpPort = -1;
 
   /* File contains the data that should be loaded into a RAM/ROM with a label matching the String
      (if no label is provided, File is loaded into every RAM/ROM) */
@@ -180,6 +184,9 @@ public class Startup implements AWTEventListener {
   private static final String ARG_TEST_VECTOR_LONG = "test-vector";
   private static final String ARG_NO_SPLASH_LONG = "no-splash";
   private static final String ARG_MAIN_CIRCUIT = "toplevel-circuit";
+  private static final String ARG_MCP_LONG = "mcp";
+  private static final String ARG_MCP_GUI_LONG = "mcp-gui";
+  private static final String ARG_MCP_HTTP_LONG = "mcp-http";
 
   /**
    * Parses provided string expecting it represent boolean option. Accepted values
@@ -341,6 +348,9 @@ public class Startup implements AWTEventListener {
     addOption(opts, "argTestVectorOption", ARG_TEST_VECTOR_LONG, ARG_TEST_VECTOR_SHORT, 2);
     addOption(opts, "argTestCircuitOption", ARG_TEST_CIRCUIT_LONG, ARG_TEST_CIRCUIT_SHORT, 1);     // FIXME add "Option" suffix to key name
     addOption(opts, "argTestCircGenOption", ARG_TEST_CIRC_GEN_LONG, ARG_TEST_CIRC_GEN_SHORT, 2);   // FIXME add "Option" suffix to key name
+    addOption(opts, "argMcpOption", ARG_MCP_LONG);
+    addOption(opts, "argMcpGuiOption", ARG_MCP_GUI_LONG);
+    addOption(opts, "argMcpHttpOption", ARG_MCP_HTTP_LONG, 1);
 
     CommandLine cmd;
     try {
@@ -359,9 +369,15 @@ public class Startup implements AWTEventListener {
     // see whether we'll be using any graphics
     var isTty = false;
     var shallClearPreferences = false;
-    if (cmd.hasOption(ARG_TTY_SHORT) || cmd.hasOption(ARG_TEST_FGPA_SHORT) || cmd.hasOption(ARG_TEST_FGPA_LONG)) {
+    final var mcpHeadless = cmd.hasOption(ARG_MCP_LONG) && !cmd.hasOption(ARG_MCP_GUI_LONG);
+    if (cmd.hasOption(ARG_TTY_SHORT) || cmd.hasOption(ARG_TEST_FGPA_SHORT) || cmd.hasOption(ARG_TEST_FGPA_LONG)
+        || mcpHeadless) {
       isTty = true;
       Main.headless = true;
+      if (mcpHeadless) {
+        // Allow off-screen rendering (screenshots) without a display.
+        System.setProperty("java.awt.headless", "true");
+      }
     } else {
       shallClearPreferences = cmd.hasOption(ARG_CLEAR_PREFS_LONG);
     }
@@ -409,6 +425,9 @@ public class Startup implements AWTEventListener {
         case ARG_TEST_CIRCUIT_LONG -> handleArgTestCircuit(startup, opt);
         case ARG_TEST_CIRC_GEN_LONG -> handleArgTestCircGen(startup, opt);
         case ARG_MAIN_CIRCUIT -> handleArgMainCircuit(startup, opt);
+        case ARG_MCP_LONG -> handleArgMcp(startup, opt);
+        case ARG_MCP_GUI_LONG -> handleArgMcpGui(startup, opt);
+        case ARG_MCP_HTTP_LONG -> handleArgMcpHttp(startup, opt);
         default -> RC.OK; // should not really happen IRL.
       };
       switch (optHandlerRc) {
@@ -436,7 +455,11 @@ public class Startup implements AWTEventListener {
       printHelp(opts);
       return null;
     }
-    if (startup.isTty && startup.filesToOpen.isEmpty()) {
+    if (startup.mcpGui && !startup.mcpStdio) {
+      logger.error(S.get("argMcpGuiNeedsMcpError"));
+      return null;
+    }
+    if (startup.isTty && startup.filesToOpen.isEmpty() && !startup.mcpStdio) {
       logger.error(S.get("ttyNeedsFileError"));
       return null;
     }
@@ -690,6 +713,29 @@ public class Startup implements AWTEventListener {
     return RC.OK;
   }
 
+  private static RC handleArgMcp(Startup startup, Option opt) {
+    startup.mcpStdio = true;
+    startup.showSplash = false;
+    return RC.OK;
+  }
+
+  private static RC handleArgMcpGui(Startup startup, Option opt) {
+    startup.mcpGui = true;
+    return RC.OK;
+  }
+
+  private static RC handleArgMcpHttp(Startup startup, Option opt) {
+    try {
+      final var port = Integer.parseInt(opt.getValue().trim());
+      if (port < 0 || port > 65535) throw new NumberFormatException();
+      startup.mcpHttpPort = port;
+      return RC.OK;
+    } catch (NumberFormatException ex) {
+      logger.error(S.get("argMcpHttpError"));
+      return RC.ERROR;
+    }
+  }
+
   private static RC handleArgMainCircuit(Startup startup, Option opt) {
     startup.circuitToTest = opt.getValues()[0];
     return RC.OK;
@@ -915,6 +961,9 @@ public class Startup implements AWTEventListener {
   }
 
   public void run() {
+    if (isTty && mcpStdio) {
+      System.exit(McpLauncher.runHeadless(filesToOpen, substitutions, mcpHttpPort));
+    }
     if (isTty) {
       var exitCode = TtyInterface.EXIT_FAILURE;
       try {
@@ -1148,6 +1197,10 @@ public class Startup implements AWTEventListener {
 
     if (exitAfterStartup) {
       System.exit(0);
+    }
+
+    if (mcpStdio || mcpHttpPort >= 0) {
+      McpLauncher.startWithGui(mcpStdio, mcpHttpPort);
     }
   }
 
