@@ -112,7 +112,11 @@ public final class ComponentRefs {
             case EndData.OUTPUT_ONLY -> "output";
             default -> "inout";
           });
-      if (portDefs != null && i < portDefs.size()) {
+      if (comp.getFactory() instanceof com.cburch.logisim.std.wiring.Pin) {
+        // A pin's port tooltip is generic; its label is what identifies it.
+        final var lbl = label(comp);
+        if (lbl != null && !lbl.isEmpty()) p.put("name", lbl);
+      } else if (portDefs != null && i < portDefs.size()) {
         final var tip = portDefs.get(i).getToolTip();
         if (tip != null && !tip.isEmpty()) p.put("name", tip);
       }
