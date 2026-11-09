@@ -3,6 +3,9 @@
 # Changes #
 
 * @dev (????-??-??)
+  * Added a Model Context Protocol (MCP) server so that AI assistants can fully control Logisim-evolution:
+    `--mcp` (stdio, optionally with windows via `--mcp-gui`), `--mcp-http <port>` and
+    Window ▸ MCP Server (AI Control). See [docs/mcp.md](docs/mcp.md).
   * Added an optional Unified Header Bar component, which could be toggled via Window Preferences [#3166] (@friendsgamingyt611-sys).
   * Preserved look-and-feel UI fonts when the Application font is Default [#3162] (@mvanhorn).
   * Sped up simulation by running a queued component once per step and caching which of its ports are connected

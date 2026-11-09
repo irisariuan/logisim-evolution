@@ -18,7 +18,7 @@ import com.cburch.logisim.proj.Action;
 import com.cburch.logisim.proj.Project;
 import com.cburch.logisim.tools.Tool;
 
-class OptionsActions {
+public final class OptionsActions {
   private OptionsActions() {}
 
   public static Action removeMapping(MouseMappings mm, Integer mods) {

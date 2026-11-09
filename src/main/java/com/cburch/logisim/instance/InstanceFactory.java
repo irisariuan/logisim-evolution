@@ -336,6 +336,11 @@ public abstract class InstanceFactory extends AbstractComponentFactory {
     }
   }
 
+  /** The poker class used by the Poke tool for instances of this factory, or null. */
+  public Class<? extends InstancePoker> getInstancePokerClass() {
+    return pokerClass;
+  }
+
   public void setInstancePoker(Class<? extends InstancePoker> pokerClass) {
     if (isClassOk(pokerClass, InstancePoker.class)) {
       this.pokerClass = pokerClass;

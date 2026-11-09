@@ -35,6 +35,12 @@ class PrefMonitorString extends AbstractPrefMonitor<String> {
     prefs.addPreferenceChangeListener(this);
   }
 
+  /** Returns the default value of this preference. */
+  @Override
+  public String getDefault() {
+    return dflt;
+  }
+
   /**
    * Retrieves the value of the preference.
    *

@@ -48,6 +48,12 @@ public class PrefMonitorBoolean extends AbstractPrefMonitor<Boolean> implements 
     prefs.addPreferenceChangeListener(this);
   }
 
+  /** Returns the default value of this preference. */
+  @Override
+  public Boolean getDefault() {
+    return dflt;
+  }
+
   /**
    * Retrieves the current value of the boolean preference.
    */

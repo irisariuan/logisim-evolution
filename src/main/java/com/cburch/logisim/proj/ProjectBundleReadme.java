@@ -54,7 +54,7 @@ public class ProjectBundleReadme extends JDialog implements ActionListener {
   private ReadmeInfo projectReadmeInfo;
   private final Frame parrent;
 
-  public class ReadmeInfo {
+  public static class ReadmeInfo {
     private String projectName;
     private String projectAuthor;
     private String projectKeywords;

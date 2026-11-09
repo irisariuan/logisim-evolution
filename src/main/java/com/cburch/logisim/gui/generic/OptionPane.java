@@ -43,12 +43,53 @@ public class OptionPane {
   static final Logger logger = LoggerFactory.getLogger(OptionPane.class);
 
   /**
+   * Replaces dialogs raised on one thread with a programmatic answer. Used by the MCP server so
+   * that remote calls never block on a modal dialog: the dialog is recorded and answered instead.
+   */
+  public interface DialogInterceptor {
+    /**
+     * Called instead of showing a dialog.
+     *
+     * @param kind one of "message", "confirm", "input" or "option".
+     * @param title dialog title (may be null).
+     * @param message dialog message (String or Swing component).
+     * @param options the choices offered (option/input dialogs) or null.
+     * @param initialValue the default choice or null.
+     * @return the dialog result: an Integer option index or *_OPTION constant for confirm/option
+     *     dialogs, the entered/selected value (or null) for input dialogs; ignored for messages.
+     */
+    Object intercept(String kind, String title, Object message, Object[] options, Object initialValue);
+  }
+
+  private static final ThreadLocal<DialogInterceptor> interceptor = new ThreadLocal<>();
+
+  /** Installs (or, with null, removes) the dialog interceptor for the calling thread. */
+  public static void setInterceptor(DialogInterceptor value) {
+    if (value == null) interceptor.remove();
+    else interceptor.set(value);
+  }
+
+  public static DialogInterceptor getInterceptor() {
+    return interceptor.get();
+  }
+
+  private static int interceptInt(String kind, String title, Object message, Object[] options,
+      Object initialValue, int fallback) {
+    final var res = interceptor.get().intercept(kind, title, message, options, initialValue);
+    return res instanceof Integer i ? i : fallback;
+  }
+
+  /**
    * Displays a message dialog with the specified message.
    *
    * @param parentComponent The parent component of the dialog.
    * @param message         The message to be displayed.
    */
   public static void showMessageDialog(Component parentComponent, Object message) {
+    if (interceptor.get() != null) {
+      interceptor.get().intercept("message", null, message, null, null);
+      return;
+    }
     if (Main.hasGui()) {
       JOptionPane.showMessageDialog(parentComponent, message);
     } else if (message instanceof String msg) {
@@ -66,6 +107,10 @@ public class OptionPane {
    */
   public static void showMessageDialog(
       Component parentComponent, Object message, String title, int messageType) {
+    if (interceptor.get() != null) {
+      interceptor.get().intercept("message", title, message, null, null);
+      return;
+    }
     if (Main.hasGui()) {
       JOptionPane.showMessageDialog(parentComponent, message, title, messageType);
     } else if (message instanceof String) {
@@ -89,6 +134,9 @@ public class OptionPane {
    * @return The option chosen by the user, or CANCEL_OPTION if the GUI is not available.
    */
   public static int showConfirmDialog(Component parentComponent, Object message, String title, int optionType) {
+    if (interceptor.get() != null) {
+      return interceptInt("confirm", title, message, null, null, CANCEL_OPTION);
+    }
     return Main.hasGui()
         ? JOptionPane.showConfirmDialog(parentComponent, message, title, optionType)
         : CANCEL_OPTION;
@@ -107,6 +155,9 @@ public class OptionPane {
    */
   public static int showConfirmDialog(Component parentComponent, Object message, String title,
                                       int optionType, int messageType) {
+    if (interceptor.get() != null) {
+      return interceptInt("confirm", title, message, null, null, CANCEL_OPTION);
+    }
     return Main.hasGui()
         ? JOptionPane.showConfirmDialog(parentComponent, message, title, optionType, messageType)
         : CANCEL_OPTION;
@@ -121,6 +172,10 @@ public class OptionPane {
    * @return The input provided by the user, or null if the GUI is not available.
    */
   public static String showInputDialog(Component parentComponent, Object message) {
+    if (interceptor.get() != null) {
+      final var res = interceptor.get().intercept("input", null, message, null, null);
+      return res == null ? null : res.toString();
+    }
     return Main.hasGui()
             ? JOptionPane.showInputDialog(parentComponent, message)
             : null;
@@ -137,6 +192,10 @@ public class OptionPane {
    * @return The input provided by the user, or null if the GUI is not available.
    */
   public static String showInputDialog(Component parentComponent, Object message, String title, int messageType) {
+    if (interceptor.get() != null) {
+      final var res = interceptor.get().intercept("input", title, message, null, null);
+      return res == null ? null : res.toString();
+    }
     return Main.hasGui()
         ? JOptionPane.showInputDialog(parentComponent, message, title, messageType)
         : null;
@@ -163,6 +222,9 @@ public class OptionPane {
                                        Icon icon,
                                        Object[] selectionValues,
                                        Object initialSelectionValue) {
+    if (interceptor.get() != null) {
+      return interceptor.get().intercept("input", title, message, selectionValues, initialSelectionValue);
+    }
     return Main.hasGui()
         ? JOptionPane.showInputDialog(parentComponent, message, title, messageType,
             icon, selectionValues, initialSelectionValue)
@@ -192,6 +254,9 @@ public class OptionPane {
                                      Icon icon,
                                      Object[] options,
                                      Object initialValue) {
+    if (interceptor.get() != null) {
+      return interceptInt("option", title, message, options, initialValue, CLOSED_OPTION);
+    }
     return Main.hasGui()
         ? JOptionPane.showOptionDialog(parentComponent, message, title, optionType,
             messageType, icon, options, initialValue)

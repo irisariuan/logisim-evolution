@@ -64,6 +64,12 @@ class PrefMonitorInt extends AbstractPrefMonitor<Integer> {
     }
   }
 
+  /** Returns the default value of this preference. */
+  @Override
+  public Integer getDefault() {
+    return getDefaultValue();
+  }
+
   /**
    * Retrieves the current value of the preference.
    *

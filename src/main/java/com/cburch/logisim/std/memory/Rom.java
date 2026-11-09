@@ -156,6 +156,14 @@ public class Rom extends Mem {
     return instance.getAttributeValue(CONTENTS_ATTR);
   }
 
+  /**
+   * Makes later in-place changes of the instance's contents undoable in {@code proj}, exactly as
+   * edits made in the ROM's hex editor are.
+   */
+  public static void registerUndoListener(Instance instance, Project proj) {
+    if (instance.getAttributeSet() instanceof RomAttributes romAttrs) romAttrs.setProject(proj);
+  }
+
   public static void closeHexFrame(Component c) {
     if (!(c instanceof InstanceComponent)) return;
     final var inst = ((InstanceComponent) c).getInstance();

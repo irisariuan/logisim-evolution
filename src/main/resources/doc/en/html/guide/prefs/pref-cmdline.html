@@ -169,6 +169,45 @@
         </dd>
       </dl>
 
+      <h2>AI control (MCP server) options</h2>
+      <p>
+        Logisim-evolution can act as a
+        <a href="https://modelcontextprotocol.io/">Model Context Protocol</a> (MCP) server, so that
+        an AI assistant or another MCP client can build, edit, simulate and test circuits with the
+        same power as a human user. See <tt>docs/mcp.md</tt> in the source repository for setup
+        examples.
+      </p>
+      <dl>
+        <dt><tt>--mcp</tt></dt>
+        <dd>
+          <p>
+            Runs an MCP server on standard input/output (JSON-RPC). This is the mode MCP clients use
+            when they launch Logisim-evolution themselves. Without <tt>--mcp-gui</tt> no window is
+            shown and every other output is redirected to standard error. Files given on the command
+            line are opened as projects.
+          </p>
+        </dd>
+
+        <dt><tt>--mcp-gui</tt></dt>
+        <dd>
+          <p>
+            Used together with <tt>--mcp</tt>: also shows the normal Logisim-evolution windows, so
+            that changes made through MCP are visible live and the user can work alongside the AI.
+          </p>
+        </dd>
+
+        <dt><tt>--mcp-http <i>PORT</i></tt></dt>
+        <dd>
+          <p>
+            Serves MCP over HTTP (Streamable HTTP transport) at
+            <tt>http://127.0.0.1:<i>PORT</i>/mcp</tt>. Use <tt>0</tt> to pick a free port. The server
+            only listens on the local machine and has no authentication: every program running on
+            this computer can control Logisim-evolution while it runs. The same server can be
+            started from a running window with <b>Window &#8594; MCP Server (AI Control)</b>.
+          </p>
+        </dd>
+      </dl>
+
       <p><b>Next:</b> <a href="../index.html">User's Guide</a>.</p>
     </div>
   </body>

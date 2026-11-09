@@ -182,6 +182,19 @@ public class PrefMonitorKeyStroke extends AbstractPrefMonitor<KeyStroke> {
     return list;
   }
 
+  /** Returns the (first) default keystroke, or null if the shortcut is unassigned by default. */
+  @Override
+  public KeyStroke getDefault() {
+    final var keyStrokes = byteArrayToKeyStroke(defaultData);
+    return keyStrokes.isEmpty() ? null : keyStrokes.get(0);
+  }
+
+  /** Restores all default keystrokes of this preference. */
+  @Override
+  public void restoreDefault() {
+    setAndStore(defaultData);
+  }
+
   /**
    * Gets the current keystroke value.
    *

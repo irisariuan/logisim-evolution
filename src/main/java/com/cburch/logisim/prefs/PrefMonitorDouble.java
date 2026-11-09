@@ -37,6 +37,12 @@ class PrefMonitorDouble extends AbstractPrefMonitor<Double> {
     prefs.addPreferenceChangeListener(this);
   }
 
+  /** Returns the default value of this preference. */
+  @Override
+  public Double getDefault() {
+    return dflt;
+  }
+
   /**
    * Retrieves the current value of the preference.
    *

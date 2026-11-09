@@ -157,6 +157,41 @@
         </dd>
       </dl>
 
+      <h2>AI 控制（MCP 服务器）选项</h2>
+      <p>
+        Logisim-evolution 可以作为
+        <a href="https://modelcontextprotocol.io/">模型上下文协议</a>（MCP）服务器运行，使 AI
+        助手或其他 MCP 客户端能够像用户一样创建、编辑、仿真和测试电路。配置示例请参阅源代码仓库中的
+        <tt>docs/mcp.md</tt>。
+      </p>
+      <dl>
+        <dt><tt>--mcp</tt></dt>
+        <dd>
+          <p>
+            在标准输入/输出上运行 MCP 服务器（JSON-RPC）。MCP 客户端自行启动 Logisim-evolution
+            时使用此模式。如果未指定 <tt>--mcp-gui</tt>，则不显示任何窗口，其他所有输出都会重定向到标准错误。
+            命令行中给出的文件会作为项目打开。
+          </p>
+        </dd>
+
+        <dt><tt>--mcp-gui</tt></dt>
+        <dd>
+          <p>
+            与 <tt>--mcp</tt> 一起使用：同时显示正常的 Logisim-evolution 窗口，从而可以实时看到通过
+            MCP 所做的修改，用户也可以与 AI 同时工作。
+          </p>
+        </dd>
+
+        <dt><tt>--mcp-http <i>端口</i></tt></dt>
+        <dd>
+          <p>
+            通过 HTTP（Streamable HTTP 传输）在 <tt>http://127.0.0.1:<i>端口</i>/mcp</tt> 提供 MCP
+            服务。使用 <tt>0</tt> 可自动选择空闲端口。服务器只监听本机且没有身份验证：运行期间，本机上的任何程序都可以控制
+            Logisim-evolution。也可以在已运行的窗口中通过<b>窗口 &#8594; MCP Server (AI Control)</b>启动同一服务器。
+          </p>
+        </dd>
+      </dl>
+
       <p><b>下一步：</b><a href="../index.html">用户指南</a>。</p>
     </div>
   </body>

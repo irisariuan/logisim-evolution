@@ -715,6 +715,11 @@ public class Frame extends LFrame.MainWindow implements LocaleListener {
     return layoutZoomModel;
   }
 
+  /** The appearance editor view, or null if it has not been opened yet in this window. */
+  public AppearanceView getAppearanceView() {
+    return appearance;
+  }
+
   private void rememberLayoutView(Object active) {
     if (active instanceof CircuitState state) {
       layoutViewMemory.remember(
